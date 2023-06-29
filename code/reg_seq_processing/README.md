@@ -1,0 +1,16 @@
+# RNA-Seq Data Processing 
+---
+This directory contains scripts that can be used to generated tables of variant sequences and their corresponding RNA_count from raw RNA-Seq data. We advise that these scripts are used before the main repo is used to ensure that the sequence files generated have the same formatting as the ones used by the scripts in the main repo. 
+
+
+## Requirements
+For quality filtering [`fastp`](https://github.com/OpenGene/fastp) is required (version 0.23.2 was used). To identify which promoter a read belongs to, we use a Julia script. Julia can be downloaded [here](https://julialang.org/downloads/) (version 1.9.0 was used here). More detailed instructions can be found [here](https://julialang.org/downloads/platform/). It is important that the bash shell that is being used can find the Julia executive. The bash shell can be changed in the first line of every script. The default is `!/bin/bash`, which has been modified in the scripts. Experienced users can run the Julia script directly in the Julia REPL.
+
+## Instructions
+Every step is given as bash script. Bash scripts can be run from the terminal by either using `sh script.sh` or making the script executable by using `chmod +x script.sh`, which allows the script to be run by `./script.sh`.
+### Quality Filtering of Mapping data `1_1_filter_mapping_reads.sh`
+The first step is to perform quality filtering on the mapping reads, in which we identify the barcodes corresponding to a promoter sequence. For this script we need `fastp`, as mentioned above. The script takes three arguments and can be run by using `./1_1_filter_mapping_reads.sh -i <path to read1> -I <path to read2> -o <path to store output>`.
+### Extracting Promoter and Barcode sequences `1_2_extract_promoter_mapping.sh`
+Next we have to extract both promoters and barcodes from each read. The number of reads for each combination of promoter and barcode is counted. Genes are put into groups, which are identified by indexes within the reads. Promoters are split by index. The script takes three arguments `./1_2_extract_promoter_mapping.sh -i <path to input file> -o <path to output folder> -g <path to index file>`. The file containing indexes is given in this folder as `index_group.txt`. 
+### Identifying promoters `1_3_map_barcodes.sh`
+Once the promoter variant sequences are extracted from the reads, we have to identify which promoter the sequence belongs to. This step requires more complicated functions and is given as a Julia script. Explanations about how to install Julia are given above. The script can be executed through a bash script, so only a working Julia installation is required. Four arguments are required for the script, `./1_3_map_barcodes.sh -w <path to wild type sequences> -g <path to gene-group file> -m <path to mapping data> -i <path to output directory>`. The mapping data is the output from the previous step, wild type sequences are given here as `wtsequences_regseq.csv` and gene groups are given as `genegroupnum.txt`.
